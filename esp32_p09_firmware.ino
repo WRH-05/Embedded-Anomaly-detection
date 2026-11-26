@@ -37,7 +37,6 @@ static float magnitudeBuffer[kWindowSize];
 static uint8_t writeIndex = 0;
 static uint16_t samplesInWindow = 0;
 static uint32_t nextSampleUs = 0;
-static uint32_t lastAlarmCycleMs = 0;
 static bool alarmToneOn = false;
 static size_t freeHeapBeforeAllocation = 0;
 static size_t freeHeapAfterAllocation = 0;
@@ -46,7 +45,7 @@ alignas(16) static uint8_t tensorArena[kTensorArenaSize];
 static tflite::MicroMutableOpResolver<2> resolver;
 static const tflite::Model* model = tflite::GetModel(g_model);
 static tflite::MicroInterpreter interpreter(
-    model, resolver, tensorArena, kTensorArenaSize);
+    model, resolver, tensorArena, kTensorArenaSize, nullptr);
 static TfLiteTensor* inputTensor = nullptr;
 static TfLiteTensor* outputTensor = nullptr;
 
@@ -380,6 +379,8 @@ void loop() {
     Serial.println("ERROR: MPU9250 accelerometer read failed; sample skipped.");
     setRgb(60, 0, 0);
     setAlarm(false);
+    samplesInWindow = 0;
+    writeIndex = 0;
     nextSampleUs = micros() + kSamplePeriodUs;
     return;
   }

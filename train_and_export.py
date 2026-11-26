@@ -53,6 +53,7 @@ def load_dataset(csv_path: Path) -> tuple[pd.DataFrame, np.ndarray]:
         df[feature] = pd.to_numeric(df[feature], errors="coerce")
     df["label"] = df["label"].astype("string").str.strip()
     df["frequence_dominante"] = df["frequence_dominante"].abs()
+    df[FEATURES] = df[FEATURES].replace([np.inf, -np.inf], np.nan)
     df = df.dropna(subset=required)
 
     unknown_labels = sorted(set(df["label"]) - set(LABEL_TO_ID))
@@ -282,6 +283,7 @@ def main() -> None:
     fig, axis = plt.subplots(figsize=(8, 5.5))
     for label in LABEL_TO_ID:
         subset = plot_df[plot_df["label"] == label]
+        subset = subset[subset["energie"] > 0]
         axis.scatter(
             subset["RMS_z"],
             subset["energie"],
